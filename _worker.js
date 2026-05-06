@@ -1,6 +1,6 @@
 let 快速订阅访问入口 = ['auto'];
 let addresses = [];
-let addressesapi = ['https://raw.githubusercontent.com/Hi-Chuan/Cf-WorkerSub/main/addressesapi.txt'];
+let addressesapi = ['https://raw.githubusercontent.com/Hi-Chuan/cf-WorkerSub/main/addressesapi.txt'];
 
 let addressesnotls = [];
 let addressesnotlsapi = [];

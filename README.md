@@ -46,13 +46,13 @@
 
    - 添加变量 `ADDAPI`/`ADDNOTLSAPI` 为 **优选IP地址txt文件** 的 URL。例如：
    ```url
-   https://raw.githubusercontent.com/cmliu/WorkerVless2sub/main/addressesapi.txt
-   https://raw.githubusercontent.com/cmliu/WorkerVless2sub/main/addressesipv6api.txt
+   https://raw.githubusercontent.com//main/addressesapi.txt
+   https://raw.githubusercontent.com//main/addressesipv6api.txt
    ```
 
    - 添加变量 `ADDCSV` 为 **iptest测速结果csv文件地址** 的 URL。例如：
    ```js
-   https://raw.githubusercontent.com/cmliu/WorkerVless2sub/main/addressescsv.csv
+   https://raw.githubusercontent.com//main/addressescsv.csv
    ```
    - 添加变量 `DLS` ，意为`ADDCSV`满足最低速度的要求，不满足改数值以上的IP将不会添加至优选订阅内容。注意：不考虑单位，只看数值，请按照您的测速结果而定。例如：
    ```js
@@ -69,7 +69,7 @@
 1. 部署 Cloudflare Worker：
 
    - 在 Cloudflare Worker 控制台中创建一个新的 Worker。
-   - 将 [worker.js](https://github.com/cmliu/WorkerVless2sub/blob/main/_worker.js)  的内容粘贴到 Worker 编辑器中。
+   - 将 [worker.js](https://github.com//blob/main/_worker.js)  的内容粘贴到 Worker 编辑器中。
 
 
 2. 修改 快速订阅入口 以及 添加内置节点信息：
@@ -107,11 +107,11 @@
    - 修改 `addressesapi` 参数，在脚本中设置 `addressesapi` 变量为 **优选IP地址txt文件** 的 URL。例如：
 	```js
 	let addressesapi = [
-		'https://raw.githubusercontent.com/cmliu/WorkerVless2sub/main/addressesapi.txt',
+		'https://raw.githubusercontent.com//main/addressesapi.txt',
  		'https://addressesapi.090227.xyz/CloudFlareYes',
 	];
 	```
-	可参考 [addressesapi.txt](https://raw.githubusercontent.com/cmliu/WorkerVless2sub/main/addressesapi.txt) 内容格式 自行搭建。
+	可参考 [addressesapi.txt](https://raw.githubusercontent.com//main/addressesapi.txt) 内容格式 自行搭建。
  
 **3.3 修改 addressescsv 参数示例**
   
@@ -119,8 +119,8 @@
 	```js
 	let DLS = 4;//速度下限
 	let addressescsv = [
-		'https://raw.githubusercontent.com/cmliu/WorkerVless2sub/main/addressescsv.csv',
- 		'https://raw.githubusercontent.com/cmliu/WorkerVless2sub/main/addressescsv.csv',
+		'https://raw.githubusercontent.com//main/addressescsv.csv',
+ 		'https://raw.githubusercontent.com//main/addressescsv.csv',
 	];
 	```
 	`DLS` 为要求满足的最低速度，不满足改数值以上的IP将不会添加至优选订阅内容。注意：不考虑单位，只看数值，请按照您的测速结果而定。
@@ -205,10 +205,10 @@
 | ALPN | `h3` | Alpn（留空则默认为`http/1.1`） | 
 | SCV | `true` | 是否跳过证书验证（留空则默认`false`） | 
 | ADD | `icook.tw:2053#官方优选域名` | 对应`addresses`字段 （支持多元素, 元素之间使用`,`或`换行`作间隔） | 
-| ADDAPI | [https://raw.github.../addressesapi.txt](https://raw.githubusercontent.com/cmliu/WorkerVless2sub/main/addressesapi.txt) | 对应`addressesapi`字段 （支持多元素, 元素之间使用`,`或`换行`作间隔） | 
+| ADDAPI | [https://raw.github.../addressesapi.txt](https://raw.githubusercontent.com/Hi-Chuan/cf-WorkerSub/main/addressesapi.txt) | 对应`addressesapi`字段 （支持多元素, 元素之间使用`,`或`换行`作间隔） | 
 | ADDNOTLS | `icook.hk:8080#官方优选域名` | 对应`addressesnotls`字段 （支持多元素, 元素之间使用`,`或`换行`作间隔） | 
 | ADDNOTLSAPI | [https://raw.github.../addressesapi.txt](https://raw.githubusercontent.com/cmliu/CFcdnVmess2sub/main/addressesapi.txt) | 对应`addressesnotlsapi`字段 （支持多元素, 元素之间使用`,`或`换行`作间隔） | 
-| ADDCSV | [https://raw.github.../addressescsv.csv](https://raw.githubusercontent.com/cmliu/WorkerVless2sub/main/addressescsv.csv) | 对应`addressescsv`字段 （支持多元素, 元素之间使用`,`或`换行`作间隔） | 
+| ADDCSV | [https://raw.github.../addressescsv.csv](https://raw.githubusercontent.com/Hi-Chuan/cf-WorkerSub/main/addressescsv.csv) | 对应`addressescsv`字段 （支持多元素, 元素之间使用`,`或`换行`作间隔） | 
 | DLS | `8` |`addressescsv`测速结果满足速度下限 | 
 | NOTLS | `false` | 改为`true`, 将不做域名判断 始终返回noTLS节点 | 
 | TGTOKEN | `6894123456:XXXXXXXXXX0qExVsBPUhHDAbXXXXXqWXgBA` | 发送TG通知的机器人token | 
@@ -220,7 +220,7 @@
 | PNG | `https://raw.cmliussss.com/img/CM512.png` | 网站LOGO | 
 | IMG | `https://raw.cmliussss.com/keqing1080p.jpg` | 背景图片，多张图片将随机展示 （多元素`换行`作间隔） | 
 | BEIAN | `提供维护: <a href='https://t.me/CMLiussss'>CMLiussss</a>` | 主页维护信息 | 
-| SOCKS5DATA | [https://raw.github.../socks5Data](https://raw.githubusercontent.com/cmliu/WorkerVless2sub/main/socks5Data) | Socks5代理池 | 
+| SOCKS5DATA | [https://raw.github.../socks5Data](https://raw.githubusercontent.com/Hi-Chuan/cf-WorkerSub/main/socks5Data) | Socks5代理池 | 
 | PS | `【请勿测速】` | 节点名备注消息 | 
 | PROXYIP | `proxyip.cmliussss.net` | 默认分配的ProxyIP, 多ProxyIP将随机分配（支持多元素, 元素之间使用`,`或`换行`作间隔） | 
 | PROXYIPAPI | `https://raw.cmliussss.com/Serv00_ProxyIP.txt` | 不支持多元素 | 
@@ -233,7 +233,7 @@
 ----
 
 ## ⭐ Star 星星走起
-[![Stargazers over time](https://starchart.cc/cmliu/WorkerVless2sub.svg?variant=adaptive)](https://starchart.cc/cmliu/WorkerVless2sub)
+[![Stargazers over time](https://starchart.cc/Hi-Chuan/cf-WorkerSub.svg?variant=adaptive)](https://starchart.cc/Hi-Chuan/cf-WorkerSub)
 
 # 🙏 特别鸣谢
 ### 🚀 Sponsored by SharonNetworks

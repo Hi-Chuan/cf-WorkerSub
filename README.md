@@ -5,7 +5,6 @@
 > [!WARNING]
 > 注意！这是一个**公益服务项目**，请不要将私人节点放入`LINK`变量，这会让所有人都能获得此节点！！！
 
-> Telegram交流群：[@CMLiussss](https://t.me/CMLiussss)
 ## 🔧 部署方法
 ### 🛠 Pages Github 部署 [视频教程](https://www.youtube.com/watch?v=p-KhFJAC4WQ&t=509s)
 <details>

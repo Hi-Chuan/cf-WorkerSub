@@ -9,7 +9,7 @@ let addressescsv = [];
 let DLS = 7;
 let remarkIndex = 1;//CSV备注所在列偏移量
 
-let subConverter = 'https://sub.151231.xyz:8888';
+let subConverter = 'subapi.841110.xyz';
 let subConfig = atob('aHR0cHM6Ly9naXRodWIuY29tL0FDTDRTU1IvQUNMNFNTUi9ibG9iL21hc3Rlci9DbGFzaC9jb25maWcvQUNMNFNTUl9NaW5pX011bHRpTW9kZS5pbmk=');
 let subProtocol = 'https';
 let noTLS = 'false';

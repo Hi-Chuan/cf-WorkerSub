@@ -225,7 +225,7 @@
 | PROXYIPAPI | `https://raw.cmliussss.com/Serv00_ProxyIP.txt` | 不支持多元素 | 
 | CMPROXYIPS | `proxyip.aliyun.cmliussss.net#HK` | 识别HK后分配对应的ProxyIP（支持多元素, 元素之间使用`,`或`换行`作间隔） | 
 | CFPORTS | `2053`,`2096`,`8443` | CF账户标准端口列表 |
-| URL302 | `https://t.me/CMLiussss` | 主页302跳转(支持多url, url之间使用`,`或`换行`作间隔, 小白别用) |
+| URL302 | `https://t.me/CMLiu` | 主页302跳转(支持多url, url之间使用`,`或`换行`作间隔, 小白别用) |
 | URL | `https://blog.cmliussss.com` | 主页反代伪装(支持多url, url之间使用`,`或`换行`作间隔, 乱设容易触发反诈) |
 | LINK | `vless://b7a39...`,`vmess://ew0K...`,`https://sub...` | 补充的**公益节点链接**（不要填入私用节点）, 可同时放入多个节点链接与多个订阅链接（支持多元素, 元素之间使用`,`或`换行`作间隔） |
 
@@ -235,24 +235,7 @@
 [![Stargazers over time](https://starchart.cc/Hi-Chuan/cf-WorkerSub.svg?variant=adaptive)](https://starchart.cc/Hi-Chuan/cf-WorkerSub)
 
 # 🙏 特别鸣谢
-### 🚀 Sponsored by SharonNetworks
-
-<a href="https://sharon.io/">
-  <img src="https://framerusercontent.com/assets/3bMljdaUFNDFvMzdG9S0NjYmhSY.png" width="30%" alt="sharon.io">
-</a>
-
-本项目的[订阅转换](https://sub.cmliussss.com/)后端由 SharonNetworks 提供支持 —— 专注亚太顶级回国优化线路，高带宽、低延迟直连中国大陆，内置强大高防 DDoS 清洗能力。
-
-SharonNetworks 为您的业务起飞保驾护航！
-
-#### ✨ 服务优势
-
-* 亚太三网回程优化直连中国大陆，下载快到飞起
-* 超大带宽 + 抗攻击清洗服务，保障业务安全稳定
-* 多节点覆盖（香港、新加坡、日本、台湾、韩国）
-* 高防护力、高速网络；港/日/新 CDN 即将上线
-
-想体验同款构建环境？欢迎 [访问 Sharon 官网](https://sharon.io) 或 [加入 Telegram 群组](https://t.me/SharonNetwork) 了解更多并申请赞助。
+### 🚀 
 
 ## 🛠 开源代码引用
 - [SAKURA-YUMI](https://github.com/SAKURA-YUMI)

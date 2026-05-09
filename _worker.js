@@ -27,44 +27,48 @@ let EndPS = '';
 let 协议类型 = atob(`\u0056\u006b\u0078\u0046\u0055\u0031\u004d\u003d`);
 let FileName = '优选订阅生成器';
 let SUBUpdateTime = 6;
-let total = 24;
-let timestamp = 4102329600000;
 const regex = /^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|\[.*\]):?(\d+)?#?(.*)?$/;
 let fakeUserID;
 let fakeHostName;
 let httpsPorts = ["2053", "2083", "2087", "2096", "8443"];
 let 有效时间 = 7;
 let 更新时间 = 3;
-let MamaJustKilledAMan = ['twitter', 'miaoko'];
+let MamaJustKilledAMan = ['telegram', 'twitter', 'miaoko'];
 let proxyIPPool = [];
 let socks5Data;
 let alpn = '';
 let 额外ID = '0';
 let 加密方式 = 'auto';
 let 网站图标, 网站头像, 网站背景, xhttp = '';
-
 async function 整理优选列表(api) {
 	if (!api || api.length === 0) return [];
 
 	let newapi = "";
 
+	// 创建一个AbortController对象，用于控制fetch请求的取消
 	const controller = new AbortController();
+
 	const timeout = setTimeout(() => {
-		controller.abort(); 
-	}, 2000); 
+		controller.abort(); // 取消所有请求
+	}, 2000); // 2秒后触发
 
 	try {
+		// 使用Promise.allSettled等待所有API请求完成，无论成功或失败
+		// 对api数组进行遍历，对每个API地址发起fetch请求
 		const responses = await Promise.allSettled(api.map(apiUrl => fetch(apiUrl, {
 			method: 'get',
 			headers: {
 				'Accept': 'text/html,application/xhtml+xml,application/xml;',
 				'User-Agent': FileName + atob('IChodHRwczovL2dpdGh1Yi5jb20vY21saXUvV29ya2VyVmxlc3Myc3ViKQ==')
 			},
-			signal: controller.signal 
+			signal: controller.signal // 将AbortController的信号量添加到fetch请求中，以便于需要时可以取消请求
 		}).then(response => response.ok ? response.text() : Promise.reject())));
 
+		// 遍历所有响应
 		for (const [index, response] of responses.entries()) {
+			// 检查响应状态是否为'fulfilled'，即请求成功完成
 			if (response.status === 'fulfilled') {
+				// 获取响应的内容
 				const content = await response.value;
 
 				const lines = content.split(/\r?\n/);
@@ -86,7 +90,9 @@ async function 整理优选列表(api) {
 						}
 					}
 				} else {
+					// 验证当前apiUrl是否带有'proxyip=true'
 					if (api[index].includes('proxyip=true')) {
+						// 如果URL带有'proxyip=true'，则将内容添加到proxyIPPool
 						proxyIPPool = proxyIPPool.concat((await 整理(content)).map(item => {
 							const baseItem = item.split('#')[0] || item;
 							if (baseItem.includes(':')) {
@@ -97,9 +103,10 @@ async function 整理优选列表(api) {
 							} else {
 								return `${baseItem}:443`;
 							}
-							return null; 
-						}).filter(Boolean)); 
+							return null; // 不符合条件时返回 null
+						}).filter(Boolean)); // 过滤掉 null 值
 					}
+					// 将内容添加到newapi中
 					newapi += content + '\n';
 				}
 			}
@@ -107,33 +114,40 @@ async function 整理优选列表(api) {
 	} catch (error) {
 		console.error(error);
 	} finally {
+		// 无论成功或失败，最后都清除设置的超时定时器
 		clearTimeout(timeout);
 	}
 
 	const newAddressesapi = await 整理(newapi);
+
+	// 返回处理后的结果
 	return newAddressesapi;
 }
 
 async function 整理测速结果(tls) {
+	// 参数验证
 	if (!tls) {
 		console.error('TLS参数不能为空');
 		return [];
 	}
 
+	// 检查CSV地址列表
 	if (!Array.isArray(addressescsv) || addressescsv.length === 0) {
 		console.warn('没有可用的CSV地址列表');
 		return [];
 	}
 
+	// CSV解析函数
 	function parseCSV(text) {
 		return text
-			.replace(/\r\n/g, '\n')
-			.replace(/\r/g, '\n')
-			.split('\n')
-			.filter(line => line.trim() !== '')
+			.replace(/\r\n/g, '\n')   // 统一Windows换行
+			.replace(/\r/g, '\n')	 // 处理老Mac换行
+			.split('\n')			   // 按Unix/Linux风格分割
+			.filter(line => line.trim() !== '')  // 移除空行
 			.map(line => line.split(',').map(cell => cell.trim()));
 	}
 
+	// 并行处理CSV
 	const csvPromises = addressescsv.map(async (csvUrl) => {
 		try {
 			const response = await fetch(csvUrl);
@@ -145,6 +159,7 @@ async function 整理测速结果(tls) {
 			const text = await response.text();
 			const rows = parseCSV(text);
 
+			// 解构和验证CSV头部
 			const [header, ...dataRows] = rows;
 			const tlsIndex = header.findIndex(col => col.toUpperCase() === 'TLS');
 
@@ -164,6 +179,7 @@ async function 整理测速结果(tls) {
 					const dataCenter = row[tlsIndex + remarkIndex];
 					const formattedAddress = `${ipAddress}:${port}#${dataCenter}`;
 
+					// 处理代理IP池
 					if (csvUrl.includes('proxyip=true') &&
 						row[tlsIndex].toUpperCase() === 'TRUE' &&
 						!httpsPorts.includes(port)) {
@@ -178,17 +194,26 @@ async function 整理测速结果(tls) {
 		}
 	});
 
+	// 使用Promise.all并行处理并展平结果
 	const results = await Promise.all(csvPromises);
 	return results.flat();
 }
 
 async function 整理(内容) {
+	// 将制表符、双引号、单引号和换行符都替换为逗号
+	// 然后将连续的多个逗号替换为单个逗号
 	var 替换后的内容 = 内容.replace(/[	|"'\r\n]+/g, ',').replace(/,+/g, ',');
+
+	// 删除开头和结尾的逗号（如果有的话）
 	if (替换后的内容.charAt(0) == ',') 替换后的内容 = 替换后的内容.slice(1);
 	if (替换后的内容.charAt(替换后的内容.length - 1) == ',') 替换后的内容 = 替换后的内容.slice(0, 替换后的内容.length - 1);
+
+	// 使用逗号分割字符串，得到地址数组
 	const 地址数组 = 替换后的内容.split(',');
+
 	return 地址数组;
 }
+
 
 async function nginx() {
 	const text = `
@@ -246,17 +271,23 @@ function surge(content, url, path) {
 }
 
 function getRandomProxyByMatch(CC, socks5Data) {
+	// 将匹配字符串转换为小写
 	const lowerCaseMatch = CC.toLowerCase();
+
+	// 过滤出所有以指定匹配字符串结尾的代理字符串
 	let filteredProxies = socks5Data.filter(proxy => proxy.toLowerCase().endsWith(`#${lowerCaseMatch}`));
 
+	// 如果没有匹配的代理，尝试匹配 "US"
 	if (filteredProxies.length === 0) {
 		filteredProxies = socks5Data.filter(proxy => proxy.toLowerCase().endsWith(`#us`));
 	}
 
+	// 如果还是没有匹配的代理，从整个代理列表中随机选择一个
 	if (filteredProxies.length === 0) {
 		return socks5Data[Math.floor(Math.random() * socks5Data.length)];
 	}
 
+	// 从匹配的代理中随机选择一个并返回
 	const randomProxy = filteredProxies[Math.floor(Math.random() * filteredProxies.length)];
 	return randomProxy;
 }
@@ -291,8 +322,8 @@ function isValidIPv4(address) {
 }
 
 function 生成动态UUID(密钥) {
-	const 时区偏移 = 8;
-	const 起始日期 = new Date(2007, 6, 7, 更新时间, 0, 0); 
+	const 时区偏移 = 8; // 北京时间相对于UTC的时区偏移+8小时
+	const 起始日期 = new Date(2007, 6, 7, 更新时间, 0, 0); // 固定起始日期为2007年7月7日的凌晨3点
 	const 一周的毫秒数 = 1000 * 60 * 60 * 24 * 有效时间;
 
 	function 获取当前周数() {
@@ -311,13 +342,15 @@ function 生成动态UUID(密钥) {
 		});
 	}
 
-	const 当前周数 = 获取当前周数(); 
+	const 当前周数 = 获取当前周数(); // 获取当前周数
 	const 结束时间 = new Date(起始日期.getTime() + 当前周数 * 一周的毫秒数);
 
+	// 生成两个 UUID
 	const 当前UUIDPromise = 生成UUID(密钥 + 当前周数);
 	const 上一个UUIDPromise = 生成UUID(密钥 + (当前周数 - 1));
 
-	const 到期时间UTC = new Date(结束时间.getTime() - 时区偏移 * 60 * 60 * 1000); 
+	// 格式化到期时间
+	const 到期时间UTC = new Date(结束时间.getTime() - 时区偏移 * 60 * 60 * 1000); // UTC时间
 	const 到期时间字符串 = `到期时间(UTC): ${到期时间UTC.toISOString().slice(0, 19).replace('T', ' ')} (UTC+8): ${结束时间.toISOString().slice(0, 19).replace('T', ' ')}\n`;
 
 	return Promise.all([当前UUIDPromise, 上一个UUIDPromise, 到期时间字符串]);
@@ -340,33 +373,38 @@ async function getLink(重新汇总所有链接) {
 			const decoder = new TextDecoder('utf-8');
 			return decoder.decode(bytes);
 		}
-		const controller = new AbortController();
+		const controller = new AbortController(); // 创建一个AbortController实例，用于取消请求
 
 		const timeout = setTimeout(() => {
-			controller.abort();
+			controller.abort(); // 2秒后取消所有请求
 		}, 2000);
 
 		try {
+			// 使用Promise.allSettled等待所有API请求完成，无论成功或失败
 			const responses = await Promise.allSettled(订阅链接.map(apiUrl => fetch(apiUrl, {
 				method: 'get',
 				headers: {
 					'Accept': 'text/html,application/xhtml+xml,application/xml;',
-					'User-Agent': 'v2rayN/' + FileName + ' (https://github.com/cmliu/WorkerVless2sub)'
+					'User-Agent': 'v2rayN/' + FileName + ' (https://github.com/Hi-Chuan/cf-WorkerSub)'
 				},
-				signal: controller.signal 
+				signal: controller.signal // 将AbortController的信号量添加到fetch请求中
 			}).then(response => response.ok ? response.text() : Promise.reject())));
 
+			// 遍历所有响应
 			const modifiedResponses = responses.map((response, index) => {
+				// 检查是否请求成功
 				return {
 					status: response.status,
 					value: response.status === 'fulfilled' ? response.value : null,
-					apiUrl: 订阅链接[index] 
+					apiUrl: 订阅链接[index] // 将原始的apiUrl添加到返回对象中
 				};
 			});
 
+
 			for (const response of modifiedResponses) {
+				// 检查响应状态是否为'fulfilled'
 				if (response.status === 'fulfilled') {
-					const content = await response.value || 'null';
+					const content = await response.value || 'null'; // 获取响应的内容
 					if (content.includes('://')) {
 						const lines = content.includes('\r\n') ? content.split('\r\n') : content.split('\n');
 						节点LINK = 节点LINK.concat(lines);
@@ -380,9 +418,9 @@ async function getLink(重新汇总所有链接) {
 				}
 			}
 		} catch (error) {
-			console.error(error); 
+			console.error(error); // 捕获并输出错误信息
 		} finally {
-			clearTimeout(timeout); 
+			clearTimeout(timeout); // 清除定时器
 		}
 	}
 
@@ -436,7 +474,7 @@ async function subHtml(request) {
 						position: relative;
 						background: rgba(255, 255, 255, 0.7);
 						backdrop-filter: blur(10px);
-						-webkit-backdrop-filter: blur(10px);
+						-webkit-backdrop-filter: blur(10px); 
 						max-width: 600px;
 						width: 90%;
 						padding: 2rem;
@@ -574,11 +612,6 @@ async function subHtml(request) {
 						background: var(--card-bg);
 					}
 
-					@keyframes rotate {
-						from { transform: rotate(0deg); }
-						to { transform: rotate(360deg); }
-					}
-
 					.logo-title h1 {
 						margin-bottom: 0;
 						text-align: center;
@@ -671,9 +704,10 @@ async function subHtml(request) {
 							<div style="position: relative;">
 								<span class="info-icon" onclick="toggleTooltip(event)">!</span>
 								<div class="info-tooltip" id="infoTooltip">
-									<strong>安全提示</strong>：
+									<strong>安全提示</strong>：使用优选订阅生成器时，需要您提交 <strong>节点配置信息</strong> 用于生成优选订阅链接。这意味着订阅器的维护者可能会获取到该节点信息。<strong>请自行斟酌使用风险。</strong><br>
 									<br>
-									您的节点信息将发送至后端进行转换。
+									订阅转换后端：<strong><a href='${subProtocol}://${subConverter}/version' target="_blank" rel="noopener noreferrer">${subProtocol}://${subConverter}</a></strong><br>
+									订阅转换配置文件：<strong><a href='${subConfig}' target="_blank" rel="noopener noreferrer">${subConfig}</a></strong>
 								</div>
 							</div>
 						</div>
@@ -684,11 +718,12 @@ async function subHtml(request) {
 	
 				<script>
 					function toggleTooltip(event) {
-						event.stopPropagation(); 
+						event.stopPropagation(); // 阻止事件冒泡
 						const tooltip = document.getElementById('infoTooltip');
 						tooltip.style.display = tooltip.style.display === 'block' ? 'none' : 'block';
 					}
 					
+					// 点击页面其他区域关闭提示框
 					document.addEventListener('click', function(event) {
 						const tooltip = document.getElementById('infoTooltip');
 						const infoIcon = document.querySelector('.info-icon');
@@ -765,16 +800,17 @@ async function subHtml(request) {
 							}
 							document.getElementById('result').value = subLink;
 	
+							// 更新二维码
 							const qrcodeDiv = document.getElementById('qrcode');
 							qrcodeDiv.innerHTML = '';
 							new QRCode(qrcodeDiv, {
 								text: subLink,
-								width: 220, 
-								height: 220, 
-								colorDark: "#4a60ea", 
-								colorLight: "#ffffff", 
-								correctLevel: QRCode.CorrectLevel.L, 
-								scale: 1 
+								width: 220, // 调整宽度
+								height: 220, // 调整高度
+								colorDark: "#4a60ea", // 二维码颜色
+								colorLight: "#ffffff", // 背景颜色
+								correctLevel: QRCode.CorrectLevel.L, // 设置纠错级别
+								scale: 1 // 调整像素颗粒度
 							});
 						} catch (error) {
 							alert('链接格式错误，请检查输入');
@@ -825,16 +861,12 @@ export default {
 		let type = "ws";
 		let scv = env.SCV || 'false';
 		alpn = env.ALPN || alpn;
-		let UD = Math.floor(((timestamp - Date.now()) / timestamp * 99 * 1099511627776) / 2);
 		if (env.UA) MamaJustKilledAMan = MamaJustKilledAMan.concat(await 整理(env.UA));
 
 		const currentDate = new Date();
 		const fakeUserIDMD5 = await MD5MD5(Math.ceil(currentDate.getTime()));
 		fakeUserID = fakeUserIDMD5.slice(0, 8) + "-" + fakeUserIDMD5.slice(8, 12) + "-" + fakeUserIDMD5.slice(12, 16) + "-" + fakeUserIDMD5.slice(16, 20) + "-" + fakeUserIDMD5.slice(20);
 		fakeHostName = fakeUserIDMD5.slice(6, 9) + "." + fakeUserIDMD5.slice(13, 19) + ".xyz";
-
-		total = total * 1099511627776;
-		let expire = Math.floor(timestamp / 1000);
 
 		link = env.LINK || link;
 
@@ -882,13 +914,15 @@ export default {
 					const 响应内容 = await response.text();
 					const 整理成数组 = await 整理(响应内容);
 					if (整理成数组.length > 0) {
-						临时proxyIPs = 临时proxyIPs.concat(整理成数组);
+						临时proxyIPs = 临时proxyIPs.concat(整理成数组);	//追加到proxyIPs数组中
 					}
 				}
 			}
 		}
+		//去重去除空元素
 		临时proxyIPs = [...new Set(临时proxyIPs.filter(item => item && item.trim() !== ''))];
 		if (临时proxyIPs.length > 0) proxyIPs = 临时proxyIPs;
+		//console.log(proxyIPs);
 
 		if (快速订阅访问入口.length > 0 && 快速订阅访问入口.some(token => url.pathname === `/${token}`)) {
 			host = "null";
@@ -925,6 +959,7 @@ export default {
 				else if (uuid == "null") 空字段 = "UUID";
 				EndPS += ` 订阅器内置节点 ${空字段} 未设置！！！`;
 			}
+
 		} else {
 			host = url.searchParams.get('host');
 			uuid = url.searchParams.get('uuid') || url.searchParams.get('password') || url.searchParams.get('pw');
@@ -973,15 +1008,7 @@ export default {
 			پارامترهای ضروری وارد نشده: هاست و یوآی‌دی
 			
 			${url.origin}/sub?host=[your host]&uuid=[your uuid]&path=[your path]
-			
-			
-			
-			
-			
-			
-				
-				${atob(atob('YUhSMGNITTZMeTluYVhSb2RXSXVZMjl0TDJOdGJHbDFMM2R2Y210bGNsWnNaWE56TW5OMVlnPT0='))}
-				`;
+			`;
 
 				return new Response(responseText, {
 					status: 202,
@@ -992,10 +1019,12 @@ export default {
 			if (!path || path.trim() === '') {
 				path = '/?ed=2560';
 			} else {
+				// 如果第一个字符不是斜杠，则在前面添加一个斜杠
 				path = (path[0] === '/') ? path : '/' + path;
 			}
 		}
 
+		// 构建订阅响应头对象
 		const responseHeaders = {
 			"content-type": "text/plain; charset=utf-8",
 			"Profile-Update-Interval": `${SUBUpdateTime}`,
@@ -1041,11 +1070,12 @@ export default {
 
 						if (!response.ok) {
 							console.error('获取地址时出错:', response.status, response.statusText);
-							return; 
+							return; // 如果有错误，直接返回
 						}
 
 						const text = await response.text();
 						const lines = text.split('\n');
+						// 过滤掉空行或只包含空白字符的行
 						const nonEmptyLines = lines.filter(line => line.trim() !== '');
 
 						临时中转域名 = 临时中转域名.concat(nonEmptyLines);
@@ -1053,6 +1083,7 @@ export default {
 						console.error('获取地址时出错:', error);
 					}
 				}
+				// 使用Set对象去重
 				临时中转域名 = [...new Set(临时中转域名)];
 			}
 
@@ -1107,28 +1138,34 @@ export default {
 						}
 					}
 					if (port == "-1") port = "80";
+					//console.log(address, port, addressid);
 
 					if (隧道版本作者.trim() === atob('Y21saXU=') && 获取代理IP.trim() === 'true') {
+						// 将addressid转换为小写
 						let lowerAddressid = addressid.toLowerCase();
+						// 初始化找到的proxyIP为null
 						let foundProxyIP = null;
 
 						if (socks5Data) {
 							const socks5 = getRandomProxyByMatch(lowerAddressid, socks5Data);
 							path = `/${socks5}`;
 						} else {
+							// 遍历匹配PROXYIP数组查找匹配项
 							for (let item of 匹配PROXYIP) {
 								if (item.includes('#') && item.split('#')[1] && lowerAddressid.includes(item.split('#')[1].toLowerCase())) {
 									foundProxyIP = item.split('#')[0];
-									break; 
+									break; // 找到匹配项，跳出循环
 								} else if (item.includes(':') && item.split(':')[1] && lowerAddressid.includes(item.split(':')[1].toLowerCase())) {
 									foundProxyIP = item.split(':')[0];
-									break; 
+									break; // 找到匹配项，跳出循环
 								}
 							}
 
 							if (foundProxyIP) {
+								// 如果找到匹配的proxyIP，赋值给path
 								path = atob('L3Byb3h5aXA9') + foundProxyIP;
 							} else {
+								// 如果没有找到匹配项，随机选择一个proxyIP
 								const randomProxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];
 								path = atob('L3Byb3h5aXA9') + randomProxyIP;
 							}
@@ -1187,21 +1224,26 @@ export default {
 				}
 				if (port == "-1") port = "443";
 
+				//console.log(address, port, addressid);
+
 				if (隧道版本作者.trim() === atob('Y21saXU=') && 获取代理IP.trim() === 'true') {
+					// 将addressid转换为小写
 					let lowerAddressid = addressid.toLowerCase();
+					// 初始化找到的proxyIP为null
 					let foundProxyIP = null;
 
 					if (socks5Data) {
 						const socks5 = getRandomProxyByMatch(lowerAddressid, socks5Data);
 						path = `/${socks5}`;
 					} else {
+						// 遍历匹配PROXYIP数组查找匹配项
 						for (let item of 匹配PROXYIP) {
 							if (item.includes('#') && item.split('#')[1] && lowerAddressid.includes(item.split('#')[1].toLowerCase())) {
 								foundProxyIP = item.split('#')[0];
-								break; 
+								break; // 找到匹配项，跳出循环
 							} else if (item.includes(':') && item.split(':')[1] && lowerAddressid.includes(item.split(':')[1].toLowerCase())) {
 								foundProxyIP = item.split(':')[0];
-								break; 
+								break; // 找到匹配项，跳出循环
 							}
 						}
 
@@ -1209,8 +1251,10 @@ export default {
 						if (matchingProxyIP) {
 							path = atob('L3Byb3h5aXA9') + matchingProxyIP;
 						} else if (foundProxyIP) {
+							// 如果找到匹配的proxyIP，赋值给path
 							path = atob('L3Byb3h5aXA9') + foundProxyIP;
 						} else {
+							// 如果没有找到匹配项，随机选择一个proxyIP
 							const randomProxyIP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];
 							path = atob('L3Byb3h5aXA9') + randomProxyIP;
 						}
@@ -1240,18 +1284,16 @@ export default {
 
 			}).join('\n');
 
-			let combinedContent = responseBody; 
+			let combinedContent = responseBody; // 合并内容
 
 			if (link) {
 				const links = await 整理(link);
 				const 整理节点LINK = (await getLink(links)).join('\n');
 				combinedContent += '\n' + 整理节点LINK;
-				console.log("link: " + 整理节点LINK)
 			}
 
 			if (notlsresponseBody && noTLS == 'true') {
 				combinedContent += '\n' + notlsresponseBody;
-				console.log("notlsresponseBody: " + notlsresponseBody);
 			}
 
 			if (协议类型 == atob('VHJvamFu') && (userAgent.includes('surge') || (format === 'surge' && !isSubConverterRequest)) && !userAgent.includes('cf-workers-sub')) {
@@ -1261,7 +1303,7 @@ export default {
 			} else {
 				let base64Response;
 				try {
-					base64Response = btoa(combinedContent); 
+					base64Response = btoa(combinedContent); // 重新进行 Base64 编码
 				} catch (e) {
 					function encodeBase64(data) {
 						const binary = new TextEncoder().encode(data);
